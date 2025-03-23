@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anto To-Do List</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #222;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            font-size: 16px;
+            background: #444;
+            color: white;
+        }
+        button {
+            padding: 12px 16px;
+            border: none;
+            background: #28a745;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        li {
+            background: #444;
+            padding: 15px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            color: white;
+        }
+        .completed {
+            text-decoration: line-through;
+            background: #555;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .edit, .delete, .complete {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .edit {
+            background: #ffc107;
+            color: white;
+        }
+        .delete {
+            background: red;
+            color: white;
+        }
+        .complete {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Anto To-Do List</h2>
+        <div class="input-section">
+            <input type="text" id="task-input" placeholder="Add a new task...">
+            <button onclick="addTask()">Add</button>
+        </div>
+        <ul id="task-list"></ul>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", loadTasks);
+        
+        function addTask() {
+            let taskInput = document.getElementById("task-input");
+            let taskText = taskInput.value.trim();
+            if (taskText === "") return;
+            
+            let taskList = document.getElementById("task-list");
+            let li = document.createElement("li");
+            li.innerHTML = `
+                <span>${taskText}</span>
+                <div class="actions">
+                    <button class='complete' onclick='toggleComplete(this)'>Complete</button>
+                    <button class='edit' onclick='editTask(this)'>Update</button>
+                    <button class='delete' onclick='removeTask(this)'>Terminate</button>
+                </div>`;
+            
+            taskList.appendChild(li);
+            saveTasks();
+            taskInput.value = "";
+        }
+        
+        function toggleComplete(button) {
+            let task = button.parentElement.parentElement;
+            task.classList.toggle("completed");
+            saveTasks();
+        }
+        
+        function editTask(button) {
+            let task = button.parentElement.parentElement;
+            let newText = prompt("Update Task:", task.firstElementChild.innerText);
+            if (newText !== null) {
+                task.firstElementChild.innerText = newText;
+                saveTasks();
+            }
+        }
+        
+        function removeTask(button) {
+            button.parentElement.parentElement.remove();
+            saveTasks();
+        }
+        
+        function saveTasks() {
+            let tasks = [];
+            document.querySelectorAll("#task-list li").forEach(li => {
+                tasks.push({
+                    text: li.firstElementChild.innerText,
+                    completed: li.classList.contains("completed")
+                });
+            });
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+        
+        function loadTasks() {
+            let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            let taskList = document.getElementById("task-list");
+            tasks.forEach(taskObj => {
+                let li = document.createElement("li");
+                li.classList.toggle("completed", taskObj.completed);
+                li.innerHTML = `
+                    <span>${taskObj.text}</span>
+                    <div class="actions">
+                        <button class='complete' onclick='toggleComplete(this)'>Complete</button>
+                        <button class='edit' onclick='editTask(this)'>Update</button>
+                        <button class='delete' onclick='removeTask(this)'>Terminate</button>
+                    </div>`;
+                taskList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
